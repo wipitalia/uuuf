@@ -1,0 +1,95 @@
+.c-todo {
+    --text-decoration: none;
+    padding: 5px;
+}
+
+.c-todo--completed {
+    --text-decoration: line-through;
+}
+
+.c-todo__title-text,
+.c-todo__text {
+    text-decoration: var(--text-decoration);
+}
+
+.c-todo__title-wrapper {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.c-todo__title {
+    flex: 1;
+    cursor: pointer;
+
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+}
+
+.c-todo__title-text {
+    display: block;
+    font-size: 1.2rem;
+    font-weight: bold;
+}
+
+.c-todo__text {
+    margin: 5px 0;
+}
+
+/* --- */
+
+* {
+    box-sizing: border-box;
+}
+
+html, body {
+    width: 100%;
+    padding: 0;
+    margin: 0;
+    border: none;
+}
+
+.todoapp {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 10px;
+}
+
+.todoapp__add-form {
+    padding: 5px;
+    border: 1px solid black;
+    margin-bottom: 10px;
+}
+
+.todoapp__title-wrapper {
+    display: flex;
+    flex-flow: row nowrap;
+    margin-bottom: 5px;
+}
+
+.todoapp__new-title {
+    flex: 1;
+    margin-right: 5px;
+}
+
+.todoapp__new-text {
+    width: 100%;
+}
+
+.todoapp__todos {
+    border: 1px solid black;
+}
+
+.todoapp__todos > .c-todo + .c-todo {
+    border-top: 1px solid black;
+}
+
+.todoapp__ctas {
+    display: flex;
+    flex-flow: row nowrap;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    margin-top: 5px;
+}

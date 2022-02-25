@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>UUF todo-app</title>
+        <link rel="stylesheet" href="index.css">
+        <script src="../../uuf.js"></script>
+    </head>
+    <body data-component="TodoApp">
+        <template name="TodoComponent">
+            <div class="c-todo" data-component="TodoComponent" data-args="">
+                <div class="c-todo__title-wrapper">
+                    <button type="button" data-delete-cta>X</button>
+                    <label class="c-todo__title">
+                        <input type="checkbox" data-completed-cta>
+                        <span class="c-todo__title-text" data-title></span>
+                    </label>
+                </div>
+                <p class="c-todo__text" data-text></p>
+            </div>
+        </template>
+
+        <div class="todoapp">
+            <form class="todoapp__add-form" data-todo-form>
+                <div class="todoapp__title-wrapper">
+                    <input tabindex="1" type="text" name="title" placeholder="title" class="todoapp__new-title">
+                    <button tabindex="3" type="submit">add</button>
+                </div>
+                <textarea tabindex="2" name="text" placeholder="text" class="todoapp__new-text"></textarea>
+            </form>
+            <div class="todoapp__todos" data-todos></div>
+            <div class="todoapp__ctas">
+                <button type="button" class="todoapp__delete-all" data-delete-all-cta>delete all</button>
+                <button type="button" class="todoapp__complete-all" data-complete-all-cta>complete all</button>
+            </div>
+        </div>
+
+        <script src="TodoStore.js"></script>
+        <script src="TodoApp.js"></script>
+        <script src="index.js"></script>
+    </body>
+</html>
