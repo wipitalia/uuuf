@@ -60,13 +60,13 @@ class TodoStore {
 
     completeTodo(id, completed = true) {
         this.setState(s => {
-            const todo = s.todos.find(t => t.id === id);
-            if (!todo) return s;
+            const todos = deepclone(s.todos);
 
-            const otherTodos = s.todos.filter(t => t.id !== id);
+            const todo = todos.find(t => t.id === id);
+            if (!todo) return s;
             todo.completed = completed;
 
-            return {...s, todos: otherTodos.concat([todo])};
+            return {...s, todos};
         })
     }
 
