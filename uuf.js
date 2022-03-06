@@ -211,6 +211,20 @@ const query = (root, predicate) => {
     return [...root].map(findMatches).flat();
 }
 
+
+/**
+ * similar to select, but uses `uuf.query` for DOM traversal
+ * @param {Element} elem DOM element to query on
+ * @param {Object.<string, (string, PredicateFn)>} selectorMap Object whose values are css selector strings or `all` returned object
+ * @returns {{Object.<string, Element[]>}} Object whose values are DOM elements or array of DOM elements
+ */
+const querySelect = (elem, selectorMap) => {
+    const reducer = (ret, selector, fieldName) => {
+        return {...ret, [fieldName]: uuf.query(elem, selector)}
+    }
+    return reduceObject({}, selectorMap, reducer);
+}
+
 // exports
 window.uuf = Object.assign(window.uuf || {}, {
     reduceObject,
