@@ -16,7 +16,7 @@ class TodoComponent extends BaseComponent {
 
     get HANDLERS() {
         return {
-            deleteCta: { click: this.delete },
+            deleteCta: { click: () => this.delete() },
             completedCta: { click: () => {
                 this.complete(this.dom.completedCta.checked);
             }},
