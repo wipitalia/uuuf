@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>UUF todo-app</title>
+        <link rel="stylesheet" href="index.css">
+        <script src="../../uuf.js"></script>
+    </head>
+    <body data-component="ReusableModalExample">
+
+        <button type="button" data-cta>open modal</button>
+        <span>
+            modal is: <span data-indicator></span>
+        </span>
+
+        <div data-component="ExampleModal" class="modal">
+            <div class="modal__content">
+                <button type="button" class="modal__close" data-close>X</button>
+                Example modal text
+            </div>
+        </div>
+
+        <script src="BaseComponent.js"></script>
+        <script src="Modal.js"></script>
+        <script src="ExampleModal.js"></script>
+        <script src="ReusableModalExample.js"></script>
+        <script src="index.js"></script>
+    </body>
+</html>
