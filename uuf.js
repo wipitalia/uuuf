@@ -28,15 +28,6 @@
                                    ~----~
 */
 
-// internal helpers
-const hiddenReadonly = value => ({
-    configurable: true,
-    writable: false,
-    enumerable: false,
-    value
-});
-
-// api
 /**
  * reduceObject callback
  * @callback reduceObjectCallback
@@ -111,18 +102,17 @@ const select = (elem, selectorMap) => {
  * @typedef cssClassFn
  * @param {Element} elem DOM element to toggle css class to
  * @param {boolean} toggle `true` to add clas, `false` to remove class (default: `true`)
- * @property {cssClassIsFn} is function to test for css class on element
- * @property {cssClassIsFn} has alias for `is`
+ * @property {cssClassIsFn} match function to test for css class on element
  */
 
 /**
  * Builds a convenient function to apply css classes to elements
  * @param {string} className css class to apply
- * @returns {cssClassFn} function to apply `className` to DOM element. It has a `is`/`has` property to check for `className` on element
+ * @returns {cssClassFn} function to apply `className` to DOM element. It has a `match` property to check for `className` on element
  */
 const cssClass = className => {
     const toggleFn = (elem, toggle = true) => elem.classList.toggle(className, toggle);
-    toggleFn.is = toggleFn.has = elem => elem.classList.contains(className);
+    toggleFn.match = elem => elem.classList.contains(className);
     return toggleFn;
 }
 
@@ -178,8 +168,11 @@ const emit = (elem, name, detail, bubbles = true) => {
  * @param {*} componentInstance Object to attach to element
  */
 const attach = (elem, componentInstance) => {
-    Object.defineProperties(elem, {
-        component: hiddenReadonly(componentInstance),
+    Object.defineProperty(elem, 'component', {
+        configurable: true,
+        writable: false,
+        enumerable: false,
+        value: componentInstance,
     });
 }
 

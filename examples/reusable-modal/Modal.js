@@ -32,7 +32,7 @@ class Modal extends BaseComponent {
     }
 
     get isShown() {
-        return this.css.shown.is(this.elem);
+        return this.css.shown.match(this.elem);
     }
 }
 
