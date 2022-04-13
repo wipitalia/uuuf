@@ -94,7 +94,7 @@ class TodoApp extends BaseComponent {
 
     todoTemplate(todo) {
         const newTodo = this.dom.todoTemplate.content.firstElementChild.cloneNode(true);
-        uuf.args(newTodo, todo);
+        uuuf.args(newTodo, todo);
         return newTodo;
     }
 
@@ -105,7 +105,7 @@ class TodoApp extends BaseComponent {
             this.dom.todoContainer.appendChild(tElem);
             new TodoComponent(tElem);
         });
-        this.dom.todos = uuf.query(this.elem, '[data-component="TodoComponent"]');
+        this.dom.todos = uuuf.query(this.elem, '[data-component="TodoComponent"]');
     }
 }
 

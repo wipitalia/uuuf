@@ -13,11 +13,11 @@ class BaseComponent {
 
     constructor(elem) {
         this.elem = elem;
-        uuf.attach(this.elem, this);
-        this.args = uuf.args(this.elem);
-        this.css = uuf.cssClassNames(this.CSS);
-        this.dom = uuf.select(this.elem, this.DOM);
-        uuf.bind(this.dom, this.HANDLERS);
+        uuuf.attach(this.elem, this);
+        this.args = uuuf.args(this.elem);
+        this.css = uuuf.cssClassNames(this.CSS);
+        this.dom = uuuf.select(this.elem, this.DOM);
+        uuuf.bind(this.dom, this.HANDLERS);
     }
 }
 

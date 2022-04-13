@@ -5,22 +5,22 @@ class TodoComponent {
 
         this.delete = this.delete.bind(this);
 
-        uuf.attach(this.elem, this);
+        uuuf.attach(this.elem, this);
 
-        this.args = uuf.args(this.elem);
+        this.args = uuuf.args(this.elem);
 
-        this.css = uuf.cssClassNames({
+        this.css = uuuf.cssClassNames({
             completed: 'c-todo--completed',
         })
         
-        this.dom = uuf.select(this.elem, {
+        this.dom = uuuf.select(this.elem, {
             title: '[data-title]',
             text: '[data-text]',
             deleteCta: '[data-delete-cta]',
             completedCta: '[data-completed-cta]',
         });
 
-        uuf.bind(this.dom, {
+        uuuf.bind(this.dom, {
             deleteCta: { click: this.delete },
             completedCta: { click: () => {
                 this.complete(this.dom.completedCta.checked);
@@ -55,9 +55,9 @@ class TodoApp {
 
         this.store.subscribe(this.render);
 
-        uuf.attach(this.elem, this);
+        uuuf.attach(this.elem, this);
 
-        this.dom = uuf.select(this.elem, {
+        this.dom = uuuf.select(this.elem, {
             todoTemplate: 'template[name="TodoComponent"]',
             todoForm: 'form[data-todo-form]',
             todoContainer: '[data-todos]',
@@ -67,7 +67,7 @@ class TodoApp {
 
         this.dom.todos = [];
 
-        uuf.bind(this.dom, {
+        uuuf.bind(this.dom, {
             todoForm: { submit: evt => {
                 evt.preventDefault();
                 const form = evt.target;
@@ -86,7 +86,7 @@ class TodoApp {
 
     todoTemplate(todo) {
         const newTodo = this.dom.todoTemplate.content.firstElementChild.cloneNode(true);
-        uuf.args(newTodo, todo);
+        uuuf.args(newTodo, todo);
         return newTodo;
     }
 
@@ -97,7 +97,7 @@ class TodoApp {
             this.dom.todoContainer.appendChild(tElem);
             new TodoComponent(tElem);
         });
-        this.dom.todos = uuf.query(this.elem, '[data-component="TodoComponent"]');
+        this.dom.todos = uuuf.query(this.elem, '[data-component="TodoComponent"]');
     }
 }
 

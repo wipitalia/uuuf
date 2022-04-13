@@ -17,7 +17,7 @@
        (@)                  \  `'   /                      _
        |-|\__________________\__^__<________oOo__________ (@)
        | |                                  VVV          \|-|
-       |-|         UUF: Useful Utility Functions          |-|
+       |-|   Uuuuf: Undoubtedly Useful Utility Functions   |-|
        |_|\_____________________________________________  | |
        (@)                 / ,/ \_____/ \\ ~\/~         `\|-|
         ~             ___//^~      \____/\\               (@)
@@ -28,6 +28,10 @@
                                    ~----~
 */
 
+((global, factory) => {
+    if (typeof exports === 'object' && typeof module !== 'undefined') module.exports = factory();
+    else global.uuuf = factory();
+})(this, () => { 'use strict';
 /**
  * reduceObject callback
  * @callback reduceObjectCallback
@@ -206,20 +210,19 @@ const query = (root, predicate) => {
 
 
 /**
- * similar to select, but uses `uuf.query` for DOM traversal
+ * similar to select, but uses `uuuf.query` for DOM traversal
  * @param {Element} elem DOM element to query on
  * @param {Object.<string, (string, PredicateFn)>} selectorMap Object whose values are css selector strings or `all` returned object
  * @returns {{Object.<string, Element[]>}} Object whose values are DOM elements or array of DOM elements
  */
 const querySelect = (elem, selectorMap) => {
     const reducer = (ret, selector, fieldName) => {
-        return {...ret, [fieldName]: uuf.query(elem, selector)}
+        return {...ret, [fieldName]: uuuf.query(elem, selector)}
     }
     return reduceObject({}, selectorMap, reducer);
 }
 
-// exports
-window.uuf = Object.assign(window.uuf || {}, {
+return {
     reduceObject,
     args,
     all,
@@ -230,4 +233,6 @@ window.uuf = Object.assign(window.uuf || {}, {
     emit,
     attach,
     query,
+};
+
 });

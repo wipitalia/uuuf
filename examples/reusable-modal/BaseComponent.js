@@ -1,5 +1,5 @@
 const initComponents = root => {
-    uuf.query(root, '[data-component]').forEach(elem => {
+    uuuf.query(root, '[data-component]').forEach(elem => {
         const comp = window[elem.dataset.component];  
         if (!comp) return;
         new comp(elem);
@@ -21,10 +21,10 @@ class BaseComponent {
 
     constructor(elem) {
         this.elem = elem;
-        this.args = uuf.args(this.elem);
-        this.css = uuf.cssClassNames(this.CSS);
-        this.dom = uuf.select(this.elem, this.DOM);
-        uuf.bind(this.dom, this.HANDLERS);
+        this.args = uuuf.args(this.elem);
+        this.css = uuuf.cssClassNames(this.CSS);
+        this.dom = uuuf.select(this.elem, this.DOM);
+        uuuf.bind(this.dom, this.HANDLERS);
     }
 
     initComponents() {
@@ -35,7 +35,7 @@ class BaseComponent {
 class Component extends BaseComponent {
     constructor(elem) {
         super(elem);
-        uuf.attach(this.elem, this);
+        uuuf.attach(this.elem, this);
     }
 }
 

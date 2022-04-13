@@ -1,16 +1,16 @@
 {
   "name": "uuf",
   "version": "0.0.1",
-  "description": "Useful Utility Functions",
-  "main": "uuf.js",
+  "description": "Undoubtedly Useful Utility Functions",
+  "main": "uuuf.js",
   "directories": {
     "example": "examples"
   },
   "scripts": {
     "start": "http-server"
   },
-  "author": "",
-  "license": "UNLICENSED",
+  "author": "rmariani@wipitalia.it",
+  "license": "MIT",
   "devDependencies": {
     "http-server": "^14.1.0"
   }
