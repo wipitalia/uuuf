@@ -3,8 +3,6 @@ class TodoComponent {
         this.elem = elem;
         this.store = TodoStore.instance;
 
-        this.delete = this.delete.bind(this);
-
         uuuf.attach(this.elem, this);
 
         this.args = uuuf.args(this.elem);
@@ -21,7 +19,7 @@ class TodoComponent {
         });
 
         uuuf.bind(this.dom, {
-            deleteCta: { click: this.delete },
+            deleteCta: { click: () => this.delete() },
             completedCta: { click: () => {
                 this.complete(this.dom.completedCta.checked);
             }},
@@ -51,9 +49,7 @@ class TodoApp {
         this.elem = elem;
         this.store = TodoStore.instance;
 
-        this.render = this.render.bind(this);
-
-        this.store.subscribe(this.render);
+        this.store.subscribe(s => this.render(s));
 
         uuuf.attach(this.elem, this);
 
