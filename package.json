@@ -1,6 +1,6 @@
 {
   "name": "uuuf",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Undoubtedly Useful Utility Functions",
   "main": "uuuf.js",
   "directories": {
@@ -8,6 +8,10 @@
   },
   "scripts": {
     "start": "http-server"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:wipitalia/uuuf.git"
   },
   "author": "rmariani@wipitalia.it",
   "license": "MIT",
