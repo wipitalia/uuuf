@@ -117,6 +117,7 @@ const select = (elem, selectorMap) => {
 const cssClass = className => {
     const toggleFn = (elem, toggle = true) => elem.classList.toggle(className, toggle);
     toggleFn.match = elem => elem.classList.contains(className);
+    toggleFn.toString = () => className;
     return toggleFn;
 }
 
