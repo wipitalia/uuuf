@@ -140,20 +140,57 @@ const cssClassNames = (classNameMap) => {
  */
 
 /**
- * Binds event listeners to elements
+ * Event remover
+ * @typedef EventRemover
+ */
+
+/**
+ * Event handler with remover
+ * @typedef EventCallbackRemovable
+ * @param {Event} evt fired event
+ * @property {EventRemover} remove event remover
+ */
+
+/**
+ * Adds event listeners to elements
+ * NOTE: Due to lack of ability to clone functions, `handlerMap` callbacks
+ * will be mutated.
  * @param {Object.<string, Element>} elemMap map of elements to apply handlers
- * @param {Object.<string, Object.<string, EventCallback>} handlerMap
+ * @param {Object.<string, Object.<string, EventCallback>>} handlerMap
+ * @returns {Object.<string, Object.<string, EventCallbackRemovable>>}
  */
 const bind = (elemMap, handlerMap) => {
-    Object.entries(elemMap).forEach(([fieldName, elem]) => {
+    return reduceObject({}, elemMap, (r, elem, fieldName) => {
         const evtDef = handlerMap[fieldName];
-        if (!evtDef) return;
-        Object.entries(evtDef).forEach(([evtName, handler]) => {
-            if (Array.isArray(elem)) elem.forEach(e => e.addEventListener(evtName, handler));
-            else elem.addEventListener(evtName, handler);
+        if (!evtDef) return r;
+        const rHandlerMap = reduceObject({}, evtDef, (h, handler, evtName) => {
+            let unsubFn = () => {};
+            if (Array.isArray(elem)) {
+                unsubFn = () => elem.forEach(e => e.removeEventListener(evtName, handler));
+                elem.forEach(e => e.addEventListener(evtName, handler));
+            } else {
+                unsubFn = () => elem.removeEventListener(evtName, handler);
+                elem.addEventListener(evtName, handler);
+            }
+            handler.remove = unsubFn;
+            return {...h, [evtName]: handler};
+        });
+        return {...r, [fieldName]: rHandlerMap};
+    })
+}
+
+/**
+ * Removes event listeners to elements
+ * @param {Object.<string, Object.<string, EventCallbackRemover>} handlerMap
+ */
+const unbind = handlerMap => {
+    Object.values(handlerMap).forEach(evtDef => {
+        Object.values(evtDef).forEach(handler => {
+            handler.remove();
         });
     });
 }
+
 
 /**
  * Emit custom events
@@ -231,9 +268,11 @@ return {
     cssClass,
     cssClassNames,
     bind,
+    unbind,
     emit,
     attach,
     query,
+    querySelect,
 };
 
 });
