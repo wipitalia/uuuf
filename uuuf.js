@@ -242,7 +242,7 @@ const query = (root, predicate) => {
         if (p(elem)) return [elem];
         return [...elem.children].map(findMatches).flat();
     }
-    if (!root.length) root = [root];
+    if (!Array.isArray(root)) root = [root];
     return [...root].map(findMatches).flat();
 }
 
