@@ -32,6 +32,14 @@
     if (typeof exports === 'object' && typeof module !== 'undefined') module.exports = factory();
     else global.uuuf = factory();
 })(this, () => { 'use strict';
+
+/**
+ * Checks if the value is not undefined and not null
+ * @param {*} v value to test
+ * @returns {Boolean} whenever is defined or not
+ */
+const defined = v => typeof v !== 'undefined' && v !== null
+
 /**
  * reduceObject callback
  * @callback reduceObjectCallback
@@ -52,6 +60,78 @@ const reduceObject = (obj, init, f) => {
     return Object.entries(obj).reduce((acc, [k, v]) => {
         return f(acc, v, k)
     }, init);
+}
+
+/**
+ * @typedef {Object.<string, (Node.<T>|T)>} Node.<T>
+ * @typedef {Node.<T>} Tree.<T>
+ */
+
+/**
+ * Walk to a specific node in the tree
+ * @param {Tree.<*>} tree tree to walk
+ * @param {(string[]|string)} ks list of keys representig the address. Can be a dot separated string
+ * @returns {(Node.<*>|*)}
+ */
+const treeGet = (tree, ks) => {
+    if (typeof ks === 'string') ks = ks.split('.');
+
+    const res = ks.reduce((r, k) => !defined(r) ? r : r[k], tree);
+    return res === null ? undefined : res;
+};
+
+/**
+ * mapTree callback
+ * @callback mapTreeCallback
+ * @param {*} v iteration value
+ * @param {string[]} ks iteration address
+ * @param {string} k iteration key
+ * @returns {*} mapped value
+ */
+
+/**
+ * Maps `f` to `tree`'s leaves
+ * @param {Tree.<*>} tree object to map
+ * @param {mapTreeCallback}
+ * @returns {Tree.<*>} mapped object
+ */
+const mapTree = (tree, f) => {
+    const inner = (tree, f, ks = []) => {
+        return Object.entries(tree).reduce((acc, [k, v]) => {
+            if (defined(v) && v.constructor === Object) {
+                return { ...acc, [k]: inner(v, f, [...ks, k]) };
+            }
+            const nextv = f(v, [...ks, k], k);
+            if (typeof nextv === 'undefined') return { ...acc };
+            return { ...acc, [k]: nextv };
+        }, {});
+    }
+    return inner(tree, f);
+}
+
+/**
+ * walkTree callback
+ * @callback walkTreeCallback
+ * @param {*} v iteration value
+ * @param {string[]} ks iteration address
+ * @param {string} k iteration key
+ */
+
+/**
+ * Applies `f` to `tree`'s leaves
+ * @param {Tree.<*>} tree object to map
+ * @param {walkTreeCallback}
+ */
+const walkTree = (tree, f) => {
+    const inner = (tree, f, ks = []) => {
+        Object.entries(tree).forEach(([k, v]) => {
+            if (defined(v) && v.constructor === Object) {
+                return inner(v, f, [...ks, k]);
+            }
+            f(v, [...ks, k], k);
+        });
+    }
+    inner(tree, f);
 }
 
 /**
@@ -76,11 +156,21 @@ const args = (elem, args) => {
  */
 
 /**
+ * 
  * Constructor for `querySelectorAll` selectors. see `select`
  * @param {string} query string representing a valid css selector
  * @returns {AllQuery} object representing a `querySelectorAll` query
  */
-const all = query => ({query, all: true})
+
+// hacky way to circumvent {map,walk}Object
+const all = query => new (class {
+    constructor(query) {
+        Object.defineProperties(this, {
+            query: { value: query },
+            all: { value: true },
+        })
+    }
+})(query);
 
 /**
  * Transform function applied to every value of the mapping
@@ -93,9 +183,9 @@ const all = query => ({query, all: true})
 /**
  * Query DOM from `elem`, returning map of results
  * @param {Element} elem DOM element to query on
- * @param {Object.<string, string>} selectorMap Object whose values are css selector strings or `all` returned object
+ * @param {Tree.<string|AllQuery>} selectorMap Object whose values are css selector strings or `all` returned object
  * @param {selectTransformFn} transform Transform function applied to every value of the mapping. Can be optional
- * @returns {{Object.<string, (Element|Element[]|*)>}} Object whose values are DOM elements or array of DOM elements
+ * @returns {Tree.<Element|Element[]>} Object whose values are DOM elements or array of DOM elements
  */
 const select = (elem, selectorMap, transform) => {
     if (typeof transform === "undefined") {
@@ -105,9 +195,7 @@ const select = (elem, selectorMap, transform) => {
         }
     }
 
-    return reduceObject(selectorMap, {}, (ret, selector, fieldName) => ({
-        ...ret, [fieldName]: transform(elem, selector)
-    }));
+    return mapTree(selectorMap, selector => transform(elem, selector))
 }
 
 /**
@@ -139,15 +227,10 @@ const cssClass = className => {
 
 /**
  * Builds a map of `cssClass`
- * @param {Object.<string, string>} classNameMap Object whose values are css selector strings
- * @returns {Object.<string, cssClassFn>} Object whose values are `cssClass` returned function
+ * @param {Tree.<string>} classNameMap Object whose values are css selector strings
+ * @returns {Tree.<cssClassFn>} Object whose values are `cssClass` returned function
  */
-const cssClassNames = (classNameMap) => {
-    const reducer = (ret, className, fieldName) => {
-        return {...ret, [fieldName]: cssClass(className)};
-    }
-    return reduceObject(classNameMap, {}, reducer);
-}
+const cssClassNames = (classNameMap) => mapTree(classNameMap, cssClass);
 
 /**
  * Event handler
@@ -171,15 +254,13 @@ const cssClassNames = (classNameMap) => {
  * Adds event listeners to elements
  * NOTE: Due to lack of ability to clone functions, `handlerMap` callbacks
  * will be mutated.
- * @param {Object.<string, Element>} elemMap map of elements to apply handlers
- * @param {Object.<string, Object.<string, EventCallback>>} handlerMap
- * @returns {Object.<string, Object.<string, EventCallbackRemovable>>}
+ * @param {Tree.<Element|Element[]>} elemMap map of elements to apply handlers
+ * @param {Tree.<Object.<string, EventCallback>>} handlerMap
+ * @returns {Tree.<Object.<string, EventCallbackRemovable>>}
  */
 const bind = (elemMap, handlerMap) => {
-    return reduceObject(elemMap, {}, (r, elem, fieldName) => {
-        const evtDef = handlerMap[fieldName];
-        if (!evtDef) return r;
-        const rHandlerMap = reduceObject(evtDef, {}, (h, handler, evtName) => {
+    return mapTree(elemMap, (elem, ks) => {
+        const bindReducer = (h, handler, evtName) => {
             let unsubFn = () => {};
             if (Array.isArray(elem)) {
                 unsubFn = () => elem.forEach(e => e.removeEventListener(evtName, handler));
@@ -189,18 +270,22 @@ const bind = (elemMap, handlerMap) => {
                 elem.addEventListener(evtName, handler);
             }
             handler.remove = unsubFn;
-            return {...h, [evtName]: handler};
-        });
-        return {...r, [fieldName]: rHandlerMap};
+            return { ...h, [evtName]: handler };
+        }
+
+
+        const evtDef = treeGet(handlerMap, ks);
+        if (!evtDef) return;
+        return reduceObject(evtDef, {}, bindReducer);
     })
 }
 
 /**
  * Removes event listeners to elements
- * @param {Object.<string, Object.<string, EventCallbackRemover>} handlerMap
+ * @param {Tree.<Object.<string, EventCallbackRemover>} handlerMap
  */
 const unbind = handlerMap => {
-    Object.values(handlerMap).forEach(evtDef => {
+    walkTree(handlerMap, evtDef => {
         Object.values(evtDef).forEach(handler => {
             handler.remove();
         });
@@ -273,9 +358,9 @@ const query = (root, predicate) => {
 /**
  * similar to select, but uses `uuuf.query` for DOM traversal
  * @param {Element} elem DOM element to query on
- * @param {Object.<string, (string, PredicateFn)>} selectorMap Object whose values are css selector strings or `all` returned object
+ * @param {Tree.<(string, PredicateFn)>} selectorMap Object whose values are css selector strings or `all` returned object
  * @param {queryResultTransformFn} resultTransform Transform function applied to `query` result. Defaults to the identity function (no transformation)
- * @returns {{Object.<string, (Element[]|*)>}} Object whose values are DOM elements or array of DOM elements
+ * @returns {{Tree.<(Element[]|*)>}} Object whose values are DOM elements or array of DOM elements
  */
 const querySelect = (elem, selectorMap, resultTransform = elems => elems) => {
     return select(elem, selectorMap, (elem, selector) => {
@@ -284,18 +369,27 @@ const querySelect = (elem, selectorMap, resultTransform = elems => elems) => {
 }
 
 return {
+    defined,
     reduceObject,
-    args,
-    all,
-    select,
-    cssClass,
-    cssClassNames,
-    bind,
-    unbind,
+
+    treeGet,
+    mapTree,
+    walkTree,
+
     emit,
+    args,
     attach,
     query,
+
+    cssClass,
+    cssClassNames,
+
+    all,
+    select,
     querySelect,
+
+    bind,
+    unbind,
 };
 
 });
