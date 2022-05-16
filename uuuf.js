@@ -33,6 +33,9 @@
     else global.uuuf = factory();
 })(this, () => { 'use strict';
 
+
+//// GENERIC UTILITIES
+
 /**
  * Checks if the value is not undefined and not null
  * @param {*} v value to test
@@ -61,6 +64,10 @@ const reduceObject = (obj, init, f) => {
         return f(acc, v, k)
     }, init);
 }
+
+
+
+//// OBJECT TREE UTILITIES
 
 /**
  * @typedef {Object.<string, (Node.<T>|T)>} Node.<T>
@@ -134,6 +141,22 @@ const walkTree = (tree, f) => {
     inner(tree, f);
 }
 
+
+
+//// DOM UTILITIES
+
+/**
+ * Emit custom events
+ * @param {Element} elem DOM element
+ * @param {string} name event type
+ * @param {*} detail event payload
+ * @param {boolean} bubbles `true` if event should bubble (default: `true`)
+ */
+const emit = (elem, name, detail, bubbles = true) => {
+    const evt = new CustomEvent(name, {bubbles, detail});
+    elem.dispatchEvent(evt);
+}
+
 /**
  * Set/get json payload to/from element's `data-args`
  * @param {Element} elem DOM element
@@ -147,6 +170,90 @@ const args = (elem, args) => {
         return JSON.parse(elem.dataset.args || "{}");
     }
 }
+
+/**
+ * Attach object to DOM element as hidden `component` property
+ * @param {Element} elem DOM element to attach to
+ * @param {*} componentInstance Object to attach to element
+ */
+const attach = (elem, componentInstance, fieldName = 'component') => {
+    Object.defineProperty(elem, fieldName, {
+        configurable: true,
+        writable: false,
+        enumerable: false,
+        value: componentInstance,
+    });
+}
+
+/**
+ * Predicate function for element match
+ * @typedef {function} PredicateFn
+ * @param {Element} elem element to test 
+ * @returns {boolean} whenever the element matched
+ */
+
+/**
+ * traverses dom tree returning a list of matched elements by `predicate`,
+ * without descending further into matches.
+ * @param {Element} root element to start traversal
+ * @param {(PredicateFn|string)} predicate predicate function or css selector string
+ * @returns {Element[]} Array of matched elements
+ */
+const query = (root, predicate) => {
+    let p;
+    if (typeof predicate === 'string') p = elem => elem.matches(predicate);
+    else if (typeof predicate === 'function') p = predicate;
+    else throw new TypeError('predicate is not a string or function');
+
+    const findMatches = elem => {
+        if (p(elem)) return [elem];
+        return [...elem.children].map(findMatches).flat();
+    }
+    if (!Array.isArray(root)) root = [root];
+    return [...root].map(findMatches).flat();
+}
+
+
+
+//// CSS UTILITIES
+
+/**
+ * Function to test for css class on DOM element
+ * @typedef {function} cssClassIsFn
+ * @param {string} className css class name
+ * @returns {boolean} `true` if css matches, `false` otherwise
+ */
+
+/**
+ * Function to toggle css class on DOM element 
+ * @typedef cssClassFn
+ * @param {Element} elem DOM element to toggle css class to
+ * @param {boolean} toggle `true` to add clas, `false` to remove class (default: `true`)
+ * @property {cssClassIsFn} match function to test for css class on element
+ */
+
+/**
+ * Builds a convenient function to apply css classes to elements
+ * @param {string} className css class to apply
+ * @returns {cssClassFn} function to apply `className` to DOM element. It has a `match` property to check for `className` on element
+ */
+const cssClass = className => {
+    const toggleFn = (elem, toggle = true) => elem.classList.toggle(className, toggle);
+    toggleFn.match = elem => elem.classList.contains(className);
+    toggleFn.toString = () => className;
+    return toggleFn;
+}
+
+/**
+ * Builds a map of `cssClass`
+ * @param {Tree.<string>} classNameMap Object whose values are css selector strings
+ * @returns {Tree.<cssClassFn>} Object whose values are `cssClass` returned function
+ */
+const cssClassNames = (classNameMap) => mapTree(classNameMap, cssClass);
+
+
+
+//// DOM SELECTION
 
 /**
  * Object representing a `querySelectorAll` query for `select`
@@ -199,38 +306,28 @@ const select = (elem, selectorMap, transform) => {
 }
 
 /**
- * Function to test for css class on DOM element
- * @typedef {function} cssClassIsFn
- * @param {string} className css class name
- * @returns {boolean} `true` if css matches, `false` otherwise
+ * Transform function applied to `query` result.
+ * @typedef queryResultTransformFn
+ * @param {Element[]} elems matched elements
+ * @returns {*}
  */
 
 /**
- * Function to toggle css class on DOM element 
- * @typedef cssClassFn
- * @param {Element} elem DOM element to toggle css class to
- * @param {boolean} toggle `true` to add clas, `false` to remove class (default: `true`)
- * @property {cssClassIsFn} match function to test for css class on element
+ * similar to select, but uses `uuuf.query` for DOM traversal
+ * @param {Element} elem DOM element to query on
+ * @param {Tree.<(string, PredicateFn)>} selectorMap Object whose values are css selector strings or `all` returned object
+ * @param {queryResultTransformFn} resultTransform Transform function applied to `query` result. Defaults to the identity function (no transformation)
+ * @returns {{Tree.<(Element[]|*)>}} Object whose values are DOM elements or array of DOM elements
  */
-
-/**
- * Builds a convenient function to apply css classes to elements
- * @param {string} className css class to apply
- * @returns {cssClassFn} function to apply `className` to DOM element. It has a `match` property to check for `className` on element
- */
-const cssClass = className => {
-    const toggleFn = (elem, toggle = true) => elem.classList.toggle(className, toggle);
-    toggleFn.match = elem => elem.classList.contains(className);
-    toggleFn.toString = () => className;
-    return toggleFn;
+const querySelect = (elem, selectorMap, resultTransform = elems => elems) => {
+    return select(elem, selectorMap, (elem, selector) => {
+        return resultTransform(query(elem, selector));
+    });
 }
 
-/**
- * Builds a map of `cssClass`
- * @param {Tree.<string>} classNameMap Object whose values are css selector strings
- * @returns {Tree.<cssClassFn>} Object whose values are `cssClass` returned function
- */
-const cssClassNames = (classNameMap) => mapTree(classNameMap, cssClass);
+
+
+//// EVENT HANDLERS
 
 /**
  * Event handler
@@ -293,80 +390,6 @@ const unbind = handlerMap => {
 }
 
 
-/**
- * Emit custom events
- * @param {Element} elem DOM element
- * @param {string} name event type
- * @param {*} detail event payload
- * @param {boolean} bubbles `true` if event should bubble (default: `true`)
- */
-const emit = (elem, name, detail, bubbles = true) => {
-    const evt = new CustomEvent(name, {bubbles, detail});
-    elem.dispatchEvent(evt);
-}
-
-/**
- * Attach object to DOM element as hidden `component` property
- * @param {Element} elem DOM element to attach to
- * @param {*} componentInstance Object to attach to element
- */
-const attach = (elem, componentInstance, fieldName = 'component') => {
-    Object.defineProperty(elem, fieldName, {
-        configurable: true,
-        writable: false,
-        enumerable: false,
-        value: componentInstance,
-    });
-}
-
-/**
- * Predicate function for element match
- * @typedef {function} PredicateFn
- * @param {Element} elem element to test 
- * @returns {boolean} whenever the element matched
- */
-
-/**
- * traverses dom tree returning a list of matched elements by `predicate`,
- * without descending further into matches.
- * @param {Element} root element to start traversal
- * @param {(PredicateFn|string)} predicate predicate function or css selector string
- * @returns {Element[]} Array of matched elements
- */
-const query = (root, predicate) => {
-    let p;
-    if (typeof predicate === 'string') p = elem => elem.matches(predicate);
-    else if (typeof predicate === 'function') p = predicate;
-    else throw new TypeError('predicate is not a string or function');
-
-    const findMatches = elem => {
-        if (p(elem)) return [elem];
-        return [...elem.children].map(findMatches).flat();
-    }
-    if (!Array.isArray(root)) root = [root];
-    return [...root].map(findMatches).flat();
-}
-
-
-/**
- * Transform function applied to `query` result.
- * @typedef queryResultTransformFn
- * @param {Element[]} elems matched elements
- * @returns {*}
- */
-
-/**
- * similar to select, but uses `uuuf.query` for DOM traversal
- * @param {Element} elem DOM element to query on
- * @param {Tree.<(string, PredicateFn)>} selectorMap Object whose values are css selector strings or `all` returned object
- * @param {queryResultTransformFn} resultTransform Transform function applied to `query` result. Defaults to the identity function (no transformation)
- * @returns {{Tree.<(Element[]|*)>}} Object whose values are DOM elements or array of DOM elements
- */
-const querySelect = (elem, selectorMap, resultTransform = elems => elems) => {
-    return select(elem, selectorMap, (elem, selector) => {
-        return resultTransform(query(elem, selector));
-    });
-}
 
 return {
     defined,
