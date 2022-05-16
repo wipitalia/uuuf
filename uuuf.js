@@ -225,8 +225,8 @@ const emit = (elem, name, detail, bubbles = true) => {
  * @param {Element} elem DOM element to attach to
  * @param {*} componentInstance Object to attach to element
  */
-const attach = (elem, componentInstance) => {
-    Object.defineProperty(elem, 'component', {
+const attach = (elem, componentInstance, fieldName = 'component') => {
+    Object.defineProperty(elem, fieldName, {
         configurable: true,
         writable: false,
         enumerable: false,
