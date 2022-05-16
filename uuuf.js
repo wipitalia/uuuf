@@ -48,8 +48,10 @@
  * @param {reduceObjectCallback} f reducer function
  * @returns reduced object
  */
-const reduceObject = (init, obj, f) => {
-    return Object.entries(obj).reduce((acc, [k, v]) => f(acc, v, k), init);
+const reduceObject = (obj, init, f) => {
+    return Object.entries(obj).reduce((acc, [k, v]) => {
+        return f(acc, v, k)
+    }, init);
 }
 
 /**
@@ -81,17 +83,31 @@ const args = (elem, args) => {
 const all = query => ({query, all: true})
 
 /**
+ * Transform function applied to every value of the mapping
+ * @typedef selectTransformFn
+ * @param {Element} elem root element
+ * @param {string|AllQuery} selector iterated selector
+ * @returns {*}
+ */
+
+/**
  * Query DOM from `elem`, returning map of results
  * @param {Element} elem DOM element to query on
  * @param {Object.<string, string>} selectorMap Object whose values are css selector strings or `all` returned object
- * @returns {{Object.<string, (Element|Element[])>}} Object whose values are DOM elements or array of DOM elements
+ * @param {selectTransformFn} transform Transform function applied to every value of the mapping. Can be optional
+ * @returns {{Object.<string, (Element|Element[]|*)>}} Object whose values are DOM elements or array of DOM elements
  */
-const select = (elem, selectorMap) => {
-    const reducer = (ret, selector, fieldName) => {
-        if (selector.all) return {...ret, [fieldName]: [...elem.querySelectorAll(selector.query)]};
-        return {...ret, [fieldName]: elem.querySelector(selector)}
+const select = (elem, selectorMap, transform) => {
+    if (typeof transform === "undefined") {
+        transform = (elem, selector) => {
+            if (selector.all) return [...elem.querySelectorAll(selector.query)];
+            return elem.querySelector(selector);
+        }
     }
-    return reduceObject({}, selectorMap, reducer);
+
+    return reduceObject(selectorMap, {}, (ret, selector, fieldName) => ({
+        ...ret, [fieldName]: transform(elem, selector)
+    }));
 }
 
 /**
@@ -130,7 +146,7 @@ const cssClassNames = (classNameMap) => {
     const reducer = (ret, className, fieldName) => {
         return {...ret, [fieldName]: cssClass(className)};
     }
-    return reduceObject({}, classNameMap, reducer);
+    return reduceObject(classNameMap, {}, reducer);
 }
 
 /**
@@ -160,10 +176,10 @@ const cssClassNames = (classNameMap) => {
  * @returns {Object.<string, Object.<string, EventCallbackRemovable>>}
  */
 const bind = (elemMap, handlerMap) => {
-    return reduceObject({}, elemMap, (r, elem, fieldName) => {
+    return reduceObject(elemMap, {}, (r, elem, fieldName) => {
         const evtDef = handlerMap[fieldName];
         if (!evtDef) return r;
-        const rHandlerMap = reduceObject({}, evtDef, (h, handler, evtName) => {
+        const rHandlerMap = reduceObject(evtDef, {}, (h, handler, evtName) => {
             let unsubFn = () => {};
             if (Array.isArray(elem)) {
                 unsubFn = () => elem.forEach(e => e.removeEventListener(evtName, handler));
@@ -248,16 +264,23 @@ const query = (root, predicate) => {
 
 
 /**
+ * Transform function applied to `query` result.
+ * @typedef queryResultTransformFn
+ * @param {Element[]} elems matched elements
+ * @returns {*}
+ */
+
+/**
  * similar to select, but uses `uuuf.query` for DOM traversal
  * @param {Element} elem DOM element to query on
  * @param {Object.<string, (string, PredicateFn)>} selectorMap Object whose values are css selector strings or `all` returned object
- * @returns {{Object.<string, Element[]>}} Object whose values are DOM elements or array of DOM elements
+ * @param {queryResultTransformFn} resultTransform Transform function applied to `query` result. Defaults to the identity function (no transformation)
+ * @returns {{Object.<string, (Element[]|*)>}} Object whose values are DOM elements or array of DOM elements
  */
-const querySelect = (elem, selectorMap) => {
-    const reducer = (ret, selector, fieldName) => {
-        return {...ret, [fieldName]: uuuf.query(elem, selector)}
-    }
-    return reduceObject({}, selectorMap, reducer);
+const querySelect = (elem, selectorMap, resultTransform = elems => elems) => {
+    return select(elem, selectorMap, (elem, selector) => {
+        return resultTransform(query(elem, selector));
+    });
 }
 
 return {
