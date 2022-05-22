@@ -1,0 +1,23 @@
+{
+  "name": "uuuf",
+  "version": "0.0.7",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wipitalia/uuuf"
+  },
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "auto-bind": "^5.0.1",
+    "immer": "^9.0.14",
+    "libuuuf": "^0.0.1",
+    "liwra": "^0.0.7",
+    "ramda": "^0.28.0",
+    "zustand": "^4.0.0-rc.1"
+  }
+}
