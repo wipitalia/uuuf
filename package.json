@@ -1,6 +1,6 @@
 {
   "name": "uuuf",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -15,7 +15,7 @@
   "dependencies": {
     "auto-bind": "^5.0.1",
     "immer": "^9.0.14",
-    "libuuuf": "^0.0.1",
+    "libuuuf": "^0.0.4",
     "liwra": "^0.0.7",
     "ramda": "^0.28.0",
     "zustand": "^4.0.0-rc.1"
