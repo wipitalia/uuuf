@@ -11,18 +11,22 @@ const isNotLoaded = e => !e.component;
 const isComponentNotLoaded = e => isComponent(e) && isNotLoaded(e);
 
 
-export const importComponent = componentPath => {
+const importComponent = async componentPath => {
     return import(`@Components/${componentPath}`).then(mod => mod.default);
 };
 
-export const loadComponents = (root, extraPredicate = () => true) => {
+const loadComponents = async (root, {
+    extraPredicate = () => true,
+    importFunction = importComponent,
+}) => {
     if (root instanceof HTMLCollection) root = [...root];
 
     const predicate = e => isComponentNotLoaded(e) && extraPredicate(e);
 
-    const comps = uuuf.query(root, predicate).map(el => {
+    const comps = uuuf.query(root, predicate).map(async el => {
         const compName = el.dataset.jsComponent;
-        return importComponent(compName).then(comp => new comp(el));
+        const comp = await importFunction(compName);
+        return new comp(el);
     });
 
     return Promise.all(comps).then(async cs => {
@@ -34,10 +38,18 @@ export const loadComponents = (root, extraPredicate = () => true) => {
 };
 
 export default class Component {
-    // Utils
-    static import = importComponent;
+    static DEFAULTS = {
+        import: importComponent,
+        load: loadComponents,
+    }
 
-    static load = loadComponents;
+    // Utils
+    static import = path => Component.DEFAULTS.import(path);
+
+    static load = (root, opts) => Component.DEFAULTS.load(root, {
+        importFunction: Component.import,
+        ...opts,
+    });
 
 
     // Declarations
@@ -55,7 +67,13 @@ export default class Component {
             myElement: '[data-my-element]',
             myElement: ['[data-my-element]', {
                 click: () => console.log("hello, world!"),
-            }]
+            }],
+            myGroup: {
+                elem1: '[data-elem-1]',
+                elem2: ['[data-elem-2]', {
+                    click: () => console.log("hello, world!"),
+                }]
+            },
             */
         };
     }
