@@ -1,4 +1,8 @@
-import uuuf, { reduceObject } from 'libuuuf';
+import { reduceObject } from './utils';
+import { query, querySelect, attach, args } from './dom';
+import { cssClassNames } from './css';
+import { mapTree } from './objtree';
+import { bind, unbind, emit } from './events';
 import liwra from 'liwra';
 
 import autoBind from 'auto-bind';
@@ -11,19 +15,20 @@ const isNotLoaded = e => !e.component;
 const isComponentNotLoaded = e => isComponent(e) && isNotLoaded(e);
 
 
-const importComponent = async componentPath => {
+// TODO: fix this, make it flexible/builder-agnostic
+async function importComponent(componentPath) {
     return import(`@Components/${componentPath}`).then(mod => mod.default);
 };
 
-const loadComponents = async (root, {
+async function loadComponents(root, {
     extraPredicate = () => true,
     importFunction = importComponent,
-}) => {
+}) {
     if (root instanceof HTMLCollection) root = [...root];
 
     const predicate = e => isComponentNotLoaded(e) && extraPredicate(e);
 
-    const comps = uuuf.query(root, predicate).map(async el => {
+    const comps = query(root, predicate).map(async el => {
         const compName = el.dataset.jsComponent;
         const comp = await importFunction(compName);
         return new comp(el);
@@ -31,7 +36,7 @@ const loadComponents = async (root, {
 
     return Promise.all(comps).then(async cs => {
         for (const c of cs) {
-            uuuf.attach(c.elem, c);
+            attach(c.elem, c);
             await c.ready();
         }
     });
@@ -91,13 +96,13 @@ export default class Component {
     // Component lifecycle
     constructor(elem) {
         this.elem = elem;
-        this.args = uuuf.args(this.elem);
+        this.args = JSON.parse(elem.dataset.args || '{}')
 
         Object.defineProperties(this, {
             _handlers: { enumerable: false, writable: true, value: {} },
         });
 
-        this.css = uuuf.cssClassNames(this.CSS);
+        this.css = cssClassNames(this.CSS);
 
         autoBind(this); // automatic this.method = this.method.bind(this);
     }
@@ -112,23 +117,23 @@ export default class Component {
 
     // Methods
     select() {
-        const domMapping = uuuf.mapTree(this.DOM, v => {
+        const domMapping = mapTree(this.DOM, v => {
             return Array.isArray(v) ? v[0] : v;
         });
-        this.dom = uuuf.querySelect(this.elem, domMapping, liwra);
+        this.dom = querySelect(this.elem, domMapping, liwra);
     }
 
     bind() {
         this.select();
         this.unbind();
-        const handlersMapping = uuuf.mapTree(this.DOM, v => {
+        const handlersMapping = mapTree(this.DOM, v => {
             return Array.isArray(v) ? v[1] : undefined;
         });
-        this._handlers = uuuf.bind(this.dom, handlersMapping);
+        this._handlers = bind(this.dom, handlersMapping);
     }
 
     unbind() {
-        uuuf.unbind(this._handlers);
+        unbind(this._handlers);
     }
 
     connect() {
@@ -167,7 +172,7 @@ export default class Component {
     }
 
     emit(name, detail, bubbles = true) {
-        uuuf.emit(this.elem, name, detail, bubbles);
+        emit(this.elem, name, detail, bubbles);
     }
 
     async mix(component, elem = this.elem) {
