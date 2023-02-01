@@ -1,8 +1,7 @@
-import { query, querySelect, attach } from './dom';
+import { query, querySelect, attach, $$, $ALL } from './dom';
 import { cssClassNames } from './css';
 import { treeMap } from './objtree';
 import { bind, unbind, emit } from './events';
-import liwra from 'liwra';
 
 import autoBind from 'auto-bind';
 
@@ -29,7 +28,7 @@ export default function makeComponent({
     const isComponent = e => e.matches(componentSelector) && getComponentName(e);
     const isNotLoaded = e => !e.component;
 
-    const module = {};
+    const module = { $$, $ALL };
 
     module.loadComponents = async (root, extraPredicate = () => true) => {
         if (root instanceof HTMLCollection) root = [...root];
@@ -109,7 +108,7 @@ export default function makeComponent({
             const domMapping = treeMap(this.DOM, v => {
                 return Array.isArray(v) ? v[0] : v;
             });
-            this.dom = querySelect(this.elem, domMapping, liwra);
+            this.dom = querySelect(this.elem, domMapping);
         }
 
         bind() {

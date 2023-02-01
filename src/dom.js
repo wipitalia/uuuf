@@ -14,9 +14,8 @@ export function attach(elem, componentInstance, fieldName = 'component') {
 // without descending further into matches.
 export function query(root, predicate) {
     let p;
-    if (typeof predicate === 'string') p = elem => elem.matches(predicate);
-    else if (typeof predicate === 'function') p = predicate;
-    else throw new TypeError('predicate is not a string or function');
+    if (typeof predicate === 'function') p = predicate;
+    else p = elem => elem.matches(predicate);
 
     const findMatches = elem => {
         if (p(elem)) return [elem];
@@ -26,35 +25,29 @@ export function query(root, predicate) {
     return [...root].map(findMatches).flat();
 }
 
-// Constructor for `querySelectorAll` selectors. see `select`
-// TODO: maybe delete since we're using liwra?
-export function all(query) {
-    // hacky way to circumvent {map,walk}Object
-    return new (class {
-        constructor(query) {
-            Object.defineProperties(this, {
-                query: { value: query },
-                all: { value: true },
-            });
-        }
-    })(query);
+function selector(type, strings, ...values) {
+    const query = strings[0] + strings.slice(1).map((s, i) => values[i] + s);
+
+    // cirumvent treeMap object detection with hidden props
+    return Object.create(null, {
+        toString: { value: () => query },
+        type: { value: type },
+    });
+}
+
+export function $$(strings, ...values) {
+    return selector('query', strings, ...values);
+}
+
+export function $ALL(strings, ...values) {
+    return selector('all', strings, ...values);
 }
 
 // Query DOM from `elem`, returning map of results
-export function select(elem, selectorMap, transform) {
-    if (typeof transform === 'undefined') {
-        transform = (elem, selector) => {
-            if (selector.all) return [...elem.querySelectorAll(selector.query)];
-            return elem.querySelector(selector);
-        };
-    }
-
-    return treeMap(selectorMap, selector => transform(elem, selector));
-}
-
-// similar to select, but uses `uuuf.query` for DOM traversal
-export function querySelect(elem, selectorMap, resultTransform = elems => elems) {
-    return select(elem, selectorMap, (elem, selector) => {
-        return resultTransform(query(elem, selector));
+export function querySelect(elem, selectorMap) {
+    return treeMap(selectorMap, selector => {
+        if (selector.type === 'query') return query(elem, selector);
+        if (selector.type === 'all') return [...elem.querySelectorAll(selector)];
+        return elem.querySelector(selector);
     });
 }
