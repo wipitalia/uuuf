@@ -21,12 +21,12 @@ export function mapTree(tree, f) {
             if (typeof nextv === 'undefined') return { ...acc };
             return { ...acc, [k]: nextv };
         }, {});
-    }
+    };
     return inner(tree, f);
 }
 
 // Applies function to tree leaves
-export function walkTree (tree, f) {
+export function walkTree(tree, f) {
     const inner = (tree, f, ks = []) => {
         Object.entries(tree).forEach(([k, v]) => {
             if (defined(v) && v.constructor === Object) {
@@ -34,6 +34,6 @@ export function walkTree (tree, f) {
             }
             f(v, [...ks, k], k);
         });
-    }
+    };
     inner(tree, f);
 }

@@ -28,5 +28,7 @@
                                    ~----~
 */
 
-export { default as Component } from './src/Component';
-export { default as Store } from './src/Store';
+import makeComponent from './component';
+
+export { default as Store } from './Store';
+export default makeComponent;

@@ -21,7 +21,7 @@ export function query(root, predicate) {
     const findMatches = elem => {
         if (p(elem)) return [elem];
         return [...elem.children].map(findMatches).flat();
-    }
+    };
     if (!Array.isArray(root)) root = [root];
     return [...root].map(findMatches).flat();
 }
@@ -35,21 +35,21 @@ export function all(query) {
             Object.defineProperties(this, {
                 query: { value: query },
                 all: { value: true },
-            })
+            });
         }
     })(query);
 }
 
 // Query DOM from `elem`, returning map of results
 export function select(elem, selectorMap, transform) {
-    if (typeof transform === "undefined") {
+    if (typeof transform === 'undefined') {
         transform = (elem, selector) => {
             if (selector.all) return [...elem.querySelectorAll(selector.query)];
             return elem.querySelector(selector);
-        }
+        };
     }
 
-    return mapTree(selectorMap, selector => transform(elem, selector))
+    return mapTree(selectorMap, selector => transform(elem, selector));
 }
 
 // similar to select, but uses `uuuf.query` for DOM traversal
