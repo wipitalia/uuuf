@@ -1,7 +1,7 @@
 import { reduceObject } from './utils';
 import { query, querySelect, attach } from './dom';
 import { cssClassNames } from './css';
-import { mapTree } from './objtree';
+import { treeMap } from './objtree';
 import { bind, unbind, emit } from './events';
 import liwra from 'liwra';
 
@@ -118,7 +118,7 @@ export default function makeComponent({
 
         // Methods
         select() {
-            const domMapping = mapTree(this.DOM, v => {
+            const domMapping = treeMap(this.DOM, v => {
                 return Array.isArray(v) ? v[0] : v;
             });
             this.dom = querySelect(this.elem, domMapping, liwra);
@@ -127,7 +127,7 @@ export default function makeComponent({
         bind() {
             this.select();
             this.unbind();
-            const handlersMapping = mapTree(this.DOM, v => {
+            const handlersMapping = treeMap(this.DOM, v => {
                 return Array.isArray(v) ? v[1] : undefined;
             });
             this._handlers = bind(this.dom, handlersMapping);

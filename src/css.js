@@ -1,4 +1,4 @@
-import { mapTree } from './objtree';
+import { treeMap } from './objtree';
 
 // Builds a convenient function to apply and test css classes to elements
 function cssClass(className) {
@@ -10,5 +10,5 @@ function cssClass(className) {
 
 // Builds a convenient function to apply css classes to elements
 export function cssClassNames(classNameMap) {
-    return mapTree(classNameMap, cssClass);
+    return treeMap(classNameMap, cssClass);
 }

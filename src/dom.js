@@ -1,4 +1,4 @@
-import { mapTree } from './objtree';
+import { treeMap } from './objtree';
 
 // Attach object to DOM element as hidden `component` property
 export function attach(elem, componentInstance, fieldName = 'component') {
@@ -49,7 +49,7 @@ export function select(elem, selectorMap, transform) {
         };
     }
 
-    return mapTree(selectorMap, selector => transform(elem, selector));
+    return treeMap(selectorMap, selector => transform(elem, selector));
 }
 
 // similar to select, but uses `uuuf.query` for DOM traversal

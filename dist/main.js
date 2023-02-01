@@ -416,7 +416,7 @@ function makeComponent() {
     }, {
       key: "select",
       value: function select() {
-        var domMapping = (0,_objtree__WEBPACK_IMPORTED_MODULE_3__.mapTree)(this.DOM, function (v) {
+        var domMapping = (0,_objtree__WEBPACK_IMPORTED_MODULE_3__.treeMap)(this.DOM, function (v) {
           return Array.isArray(v) ? v[0] : v;
         });
         this.dom = (0,_dom__WEBPACK_IMPORTED_MODULE_1__.querySelect)(this.elem, domMapping, (liwra__WEBPACK_IMPORTED_MODULE_5___default()));
@@ -426,7 +426,7 @@ function makeComponent() {
       value: function bind() {
         this.select();
         this.unbind();
-        var handlersMapping = (0,_objtree__WEBPACK_IMPORTED_MODULE_3__.mapTree)(this.DOM, function (v) {
+        var handlersMapping = (0,_objtree__WEBPACK_IMPORTED_MODULE_3__.treeMap)(this.DOM, function (v) {
           return Array.isArray(v) ? v[1] : undefined;
         });
         this._handlers = (0,_events__WEBPACK_IMPORTED_MODULE_4__.bind)(this.dom, handlersMapping);
@@ -567,7 +567,7 @@ function cssClass(className) {
 
 // Builds a convenient function to apply css classes to elements
 function cssClassNames(classNameMap) {
-  return (0,_objtree__WEBPACK_IMPORTED_MODULE_0__.mapTree)(classNameMap, cssClass);
+  return (0,_objtree__WEBPACK_IMPORTED_MODULE_0__.treeMap)(classNameMap, cssClass);
 }
 
 /***/ }),
@@ -656,7 +656,7 @@ function select(elem, selectorMap, transform) {
       return elem.querySelector(selector);
     };
   }
-  return (0,_objtree__WEBPACK_IMPORTED_MODULE_0__.mapTree)(selectorMap, function (selector) {
+  return (0,_objtree__WEBPACK_IMPORTED_MODULE_0__.treeMap)(selectorMap, function (selector) {
     return transform(elem, selector);
   });
 }
@@ -710,7 +710,7 @@ function emit(elem, name, detail) {
 // Adds event listeners to elements
 // NOTE: Due to lack of ability to clone functions, `handlerMap` callbacks will be mutated.
 function bind(elemMap, handlerMap) {
-  return (0,_objtree__WEBPACK_IMPORTED_MODULE_1__.mapTree)(elemMap, function (elem, ks) {
+  return (0,_objtree__WEBPACK_IMPORTED_MODULE_1__.treeMap)(elemMap, function (elem, ks) {
     var bindReducer = function bindReducer(h, handler, evtName) {
       var unsubFn = function unsubFn() {};
       if (Array.isArray(elem)) {
@@ -731,7 +731,7 @@ function bind(elemMap, handlerMap) {
       handler.remove = unsubFn;
       return _objectSpread(_objectSpread({}, h), {}, _defineProperty({}, evtName, handler));
     };
-    var evtDef = (0,_objtree__WEBPACK_IMPORTED_MODULE_1__.getTree)(handlerMap, ks);
+    var evtDef = (0,_objtree__WEBPACK_IMPORTED_MODULE_1__.treeGet)(handlerMap, ks);
     if (!evtDef) return;
     return (0,_utils__WEBPACK_IMPORTED_MODULE_0__.reduceObject)(evtDef, {}, bindReducer);
   });
@@ -739,8 +739,7 @@ function bind(elemMap, handlerMap) {
 
 // Removes event listeners to elements
 function unbind(handlerMap) {
-  // TODO: abuse mapTree
-  (0,_objtree__WEBPACK_IMPORTED_MODULE_1__.walkTree)(handlerMap, function (handler) {
+  (0,_objtree__WEBPACK_IMPORTED_MODULE_1__.treeMap)(handlerMap, function (handler) {
     handler.remove();
   });
 }
@@ -756,9 +755,8 @@ function unbind(handlerMap) {
 "use strict";
 __webpack_require__.r(__webpack_exports__);
 /* harmony export */ __webpack_require__.d(__webpack_exports__, {
-/* harmony export */   "getTree": () => (/* binding */ getTree),
-/* harmony export */   "mapTree": () => (/* binding */ mapTree),
-/* harmony export */   "walkTree": () => (/* binding */ walkTree)
+/* harmony export */   "treeGet": () => (/* binding */ treeGet),
+/* harmony export */   "treeMap": () => (/* binding */ treeMap)
 /* harmony export */ });
 function _typeof(obj) { "@babel/helpers - typeof"; return _typeof = "function" == typeof Symbol && "symbol" == typeof Symbol.iterator ? function (obj) { return typeof obj; } : function (obj) { return obj && "function" == typeof Symbol && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }, _typeof(obj); }
 function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
@@ -781,7 +779,7 @@ function defined(v) {
 }
 
 // Walk to a specific node in the tree
-function getTree(tree, ks) {
+function treeGet(tree, ks) {
   if (typeof ks === 'string') ks = ks.split('.');
   var res = ks.reduce(function (r, k) {
     return !defined(r) ? r : r[k];
@@ -791,7 +789,7 @@ function getTree(tree, ks) {
 ;
 
 // Maps function to tree leaves
-function mapTree(tree, f) {
+function treeMap(tree, f) {
   var inner = function inner(tree, f) {
     var ks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
     return Object.entries(tree).reduce(function (acc, _ref) {
@@ -807,23 +805,6 @@ function mapTree(tree, f) {
     }, {});
   };
   return inner(tree, f);
-}
-
-// Applies function to tree leaves
-function walkTree(tree, f) {
-  var inner = function inner(tree, f) {
-    var ks = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : [];
-    Object.entries(tree).forEach(function (_ref3) {
-      var _ref4 = _slicedToArray(_ref3, 2),
-        k = _ref4[0],
-        v = _ref4[1];
-      if (defined(v) && v.constructor === Object) {
-        return inner(v, f, [].concat(_toConsumableArray(ks), [k]));
-      }
-      f(v, [].concat(_toConsumableArray(ks), [k]), k);
-    });
-  };
-  inner(tree, f);
 }
 
 /***/ }),
