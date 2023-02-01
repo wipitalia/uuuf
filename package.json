@@ -18,11 +18,8 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
-    "auto-bind": "^5.0.1",
-    "immer": "^9.0.14",
     "liwra": "^0.0.7",
-    "ramda": "^0.28.0",
-    "zustand": "^4.0.0-rc.1"
+    "auto-bind": "^5.0.1"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.19.1",

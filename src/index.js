@@ -29,6 +29,4 @@
 */
 
 import makeComponent from './component';
-
-export { default as Store } from './Store';
 export default makeComponent;
