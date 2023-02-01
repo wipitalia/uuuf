@@ -2,6 +2,7 @@ const path = require('path');
 const { webpack } = require('webpack');
 
 const ESLintPlugin = require('eslint-webpack-plugin');
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const NODE_MODULES_PATH = path.resolve(__dirname, 'node_modules');
 const SRC_PATH = path.resolve(__dirname, 'src');
@@ -50,7 +51,8 @@ module.exports = (env, argv) => {
 
     plugins: [
       new ESLintPlugin({ fix: true }),
-    ],
+      prodOnly(() => new BundleAnalyzerPlugin()),
+    ].filter(Boolean),
 
     module: {
       rules: [
