@@ -28,5 +28,5 @@
                                    ~----~
 */
 
-import makeComponent from './component';
-export default makeComponent;
+import * as uuuf from './component';
+export default uuuf;

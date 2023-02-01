@@ -1,38 +1,71 @@
 import { reduceObject } from './utils';
-import { treeGet, treeMap } from './objtree';
+import { ObjectTree, treeGet, treeMap } from './objtree';
+import { QueryResult } from './dom';
+
+export type Handler = (evt: Event) => void
+export type HandlerMap = { [event: string]: Handler }
+
+export type RemovableHandler = { (): Handler, remove(): void }
+export type RemovableHandlerMap = { [event: string]: RemovableHandler }
 
 // Emit custom events from target element
-export function emit(elem, name, detail, bubbles = true) {
+export function emit(
+    elem: HTMLElement,
+    name: string,
+    detail: any,
+    bubbles = true
+): void {
     const evt = new CustomEvent(name, { bubbles, detail });
-    elem.dispatchevent(evt);
+    elem.dispatchEvent(evt);
+}
+
+function withRemove(fn: Function, remove = () => {}): RemovableHandler {
+    // cleanest known way to clone a function
+    // it's acceptable because `get DOM()` only uses arrow function or bound methods
+    const cloned = fn.bind(null);
+    cloned.remove = remove;
+    return cloned;
+}
+
+function makeRemovableHandler(
+    elem: QueryResult,
+    eventName: string,
+    handler: Handler,
+): RemovableHandler {
+    if (Array.isArray(elem)) {
+        elem.forEach(e => e.addEventListener(eventName, handler));
+        return withRemove(handler, () => {
+            elem.forEach(e => e.removeEventListener(eventName, handler));
+        });
+    }
+
+    elem.addEventListener(eventName, handler);
+    return withRemove(handler, () => {
+        elem.removeEventListener(eventName, handler);
+    });
 }
 
 // Adds event listeners to elements
-// NOTE: Due to lack of ability to clone functions, `handlerMap` callbacks will be mutated.
-export function bind(elemMap, handlerMap) {
-    return treeMap(elemMap, (elem, ks) => {
-        const bindReducer = (h, handler, evtName) => {
-            let unsubFn = () => {};
-            if (Array.isArray(elem)) {
-                unsubFn = () => elem.forEach(e => e.removeEventListener(evtName, handler));
-                elem.forEach(e => e.addEventListener(evtName, handler));
-            }
-            else {
-                unsubFn = () => elem.removeEventListener(evtName, handler);
-                elem.addEventListener(evtName, handler);
-            }
-            handler.remove = unsubFn;
-            return { ...h, [evtName]: handler };
-        };
-
-        const evtDef = treeGet(handlerMap, ks);
-        if (!evtDef) return;
-        return reduceObject(evtDef, {}, bindReducer);
+export function bind(
+    elemTree: ObjectTree<QueryResult>,
+    handlerTree: ObjectTree<HandlerMap>
+): ObjectTree<RemovableHandlerMap> {
+    return treeMap(elemTree, (elem, ks) => {
+        const hm = treeGet<HandlerMap>(handlerTree, ks);
+        if (!hm) return;
+        return reduceObject(hm as { [key: string]: Handler}, {}, (
+            ht: ObjectTree<RemovableHandlerMap>,
+            handler: Handler,
+            eventName: string,
+        ) => {
+            const rh = makeRemovableHandler(elem, eventName, handler);
+            return { ...ht, [eventName]: rh }
+        }) as RemovableHandlerMap;
     });
 }
 
 // Removes event listeners to elements
-export function unbind(handlerMap) {
+export function unbind(handlerMap: ObjectTree<RemovableHandlerMap>) {
     treeMap(handlerMap, handler => {
         handler.remove();
     });

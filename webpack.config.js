@@ -17,9 +17,10 @@ module.exports = (env, argv) => {
   const prodOnly = modeOnly(argv, 'production');
 
   return {
-    devtool: devOnly(() => 'source-map'),
+    // devtool: 'source-map',
+    devtool: 'inline-source-map',
 
-    entry: { main: path.resolve(SRC_PATH, 'index.js'), },
+    entry: { main: path.resolve(SRC_PATH, 'index.ts'), },
 
     output: {
       path: DIST_PATH,
@@ -56,23 +57,29 @@ module.exports = (env, argv) => {
 
     module: {
       rules: [
-        // Babel-loader
+        // Typescript loader
         {
-          test: /\.m?js$/,
+          test: /\.ts$/,
+          use: 'ts-loader',
           exclude: /(node_modules)/,
-          use: {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env'],
-              plugins: ['@babel/plugin-syntax-dynamic-import'],
-            },
-          },
         },
+        // // Babel-loader
+        // {
+        //   test: /\.m?js$/,
+        //   exclude: /(node_modules)/,
+        //   use: {
+        //     loader: 'babel-loader',
+        //     options: {
+        //       presets: ['@babel/preset-env'],
+        //       plugins: ['@babel/plugin-syntax-dynamic-import'],
+        //     },
+        //   },
+        // },
       ],
     },
 
     resolve: {
-      extensions: ['.js'],
+      extensions: ['.js', '.ts'],
       modules: [SRC_PATH, NODE_MODULES_PATH],
     },
   };
