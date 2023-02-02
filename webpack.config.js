@@ -2,6 +2,7 @@ const path = require('path');
 const { webpack } = require('webpack');
 
 const ESLintPlugin = require('eslint-webpack-plugin');
+const CompressionPlugin = require("compression-webpack-plugin");
 const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
 
 const NODE_MODULES_PATH = path.resolve(__dirname, 'node_modules');
@@ -17,14 +18,14 @@ module.exports = (env, argv) => {
   const prodOnly = modeOnly(argv, 'production');
 
   return {
-    // devtool: 'source-map',
-    devtool: 'inline-source-map',
+    devtool: 'source-map',
+    // devtool: 'inline-source-map',
 
     entry: { main: path.resolve(SRC_PATH, 'index.ts'), },
 
     output: {
       path: DIST_PATH,
-      filename: '[name].js',
+      filename: 'uuuf.js',
       library: {
         name: 'uuuf',
         type: 'umd',
@@ -52,6 +53,7 @@ module.exports = (env, argv) => {
 
     plugins: [
       new ESLintPlugin({ fix: true }),
+      new CompressionPlugin(),
       prodOnly(() => new BundleAnalyzerPlugin()),
     ].filter(Boolean),
 

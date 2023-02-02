@@ -28,5 +28,5 @@
                                    ~----~
 */
 
-import * as uuuf from './component';
-export default uuuf;
+export * from './component';
+export { uuuf as default } from './component';
