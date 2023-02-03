@@ -1,6 +1,7 @@
 import { querySelect, QueryResult, QuerySelector } from './dom';
 import { CSSClass, cssClassNames } from './css';
-import { treeMap, ObjectTree } from './objtree';
+import * as objtree from './objtree';
+import { ObjectTree } from './objtree';
 import { bind, unbind, emit, RemovableHandlerMap, HandlerMap } from './events';
 
 import autoBind from 'auto-bind';
@@ -67,7 +68,7 @@ export class Component {
 
     // Methods
     select() {
-        const domMapping = treeMap(this.DOM, v => {
+        const domMapping = objtree.map(this.DOM, v => {
             return Array.isArray(v) ? v[0] : v;
         });
         this.dom = querySelect(this.elem, domMapping);
@@ -76,7 +77,7 @@ export class Component {
     bind() {
         this.select();
         this.unbind();
-        const handlersMapping = treeMap(this.DOM, v => {
+        const handlersMapping = objtree.map(this.DOM, v => {
             return Array.isArray(v) ? v[1] : undefined;
         });
         console.log(handlersMapping)

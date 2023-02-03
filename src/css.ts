@@ -1,4 +1,5 @@
-import { ObjectTree, treeMap } from './objtree';
+import * as objtree from './objtree';
+import { ObjectTree } from './objtree';
 
 export interface CSSClass {
     (elem: HTMLElement, toggle?: boolean): boolean,
@@ -7,7 +8,7 @@ export interface CSSClass {
 }
 
 // Builds a convenient function to apply and test css classes to elements
-function cssClass(className: string): CSSClass {
+export function cssClass(className: string): CSSClass {
     const toggleFn = (elem: HTMLElement, toggle = true) => elem.classList.toggle(className, toggle);
     toggleFn.match = (elem: HTMLElement) => elem.classList.contains(className);
     toggleFn.toString = () => className;
@@ -18,5 +19,5 @@ function cssClass(className: string): CSSClass {
 export function cssClassNames(
     classNameMap: ObjectTree<string>
 ): ObjectTree<CSSClass> {
-    return treeMap(classNameMap, cssClass);
+    return objtree.map(classNameMap, cssClass);
 }

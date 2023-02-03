@@ -1,4 +1,5 @@
-import { ObjectTree, treeMap } from './objtree';
+import * as objtree from './objtree';
+import { ObjectTree } from './objtree';
 
 type QueryPredicate = string | ((e: HTMLElement) => boolean);
 
@@ -34,7 +35,7 @@ function selector(
 ): QuerySelector {
     const query = strings[0] + strings.slice(1).map((s, i) => values[i] + s);
 
-    // cirumvent treeMap object detection with hidden props
+    // cirumvent objtree.map object detection with hidden props
     return Object.create(null, {
         toString: { value: () => query },
         type: { value: type },
@@ -58,7 +59,7 @@ export function querySelect(
     elem: HTMLElement,
     selectorMap: ObjectTree<QuerySelector>
 ): ObjectTree<QueryResult> {
-    return treeMap(selectorMap, selector => {
+    return objtree.map(selectorMap, selector => {
         if (typeof selector === 'string') return elem.querySelector(selector);
         if (selector.type === 'query') return query(elem, selector.toString());
         if (selector.type === 'all') return Array.from(elem.querySelectorAll(selector.toString()));

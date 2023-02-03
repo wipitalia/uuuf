@@ -9,7 +9,7 @@ function defined(v: any): boolean {
 }
 
 // Walk to a specific node in the tree
-export function treeGet<A>(
+export function get<A>(
     tree: ObjectTree<A>,
     path: string | string[],
 ): ObjectTree<A> | A | undefined {
@@ -21,16 +21,16 @@ export function treeGet<A>(
     return res === null ? undefined : res;
 };
 
-type TreeMapFn<A, B> = (v: A, ks: string[], k: string) => B;
+type ObjtreeMapFn<A, B> = (v: A, ks: string[], k: string) => B;
 
-function innerTreeMap<A, B>(
+function innerMap<A, B>(
     tree: ObjectTree<A>,
-    f: TreeMapFn<A, B>,
+    f: ObjtreeMapFn<A, B>,
     ks: string[] = []
 ): ObjectTree<B> {
     return reduceObject(tree as { [key: string]: A}, {}, (acc, v, k) => {
         if (defined(v) && v.constructor === Object) {
-            return { ...acc, [k]: innerTreeMap(v as ObjectTree<A>, f, [...ks, k]) };
+            return { ...acc, [k]: innerMap(v as ObjectTree<A>, f, [...ks, k]) };
         }
         const nextv = f(v, [...ks, k], k);
         if (typeof nextv === 'undefined') return { ...acc };
@@ -39,9 +39,9 @@ function innerTreeMap<A, B>(
 }
 
 // Maps function to tree leaves
-export function treeMap<A, B>(
+export function map<A, B>(
     tree: ObjectTree<A>,
-    f: TreeMapFn<A, B>
+    f: ObjtreeMapFn<A, B>
 ): ObjectTree<B> {
-    return innerTreeMap(tree, f);
+    return innerMap(tree, f);
 }

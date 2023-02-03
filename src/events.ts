@@ -1,5 +1,6 @@
 import { reduceObject } from './utils';
-import { ObjectTree, treeGet, treeMap } from './objtree';
+import * as objtree from './objtree';
+import { ObjectTree} from './objtree';
 import { QueryResult } from './dom';
 
 export type Handler = (evt: Event) => void
@@ -50,8 +51,8 @@ export function bind(
     elemTree: ObjectTree<QueryResult>,
     handlerTree: ObjectTree<HandlerMap>
 ): ObjectTree<RemovableHandlerMap> {
-    return treeMap(elemTree, (elem, ks) => {
-        const hm = treeGet<HandlerMap>(handlerTree, ks);
+    return objtree.map(elemTree, (elem, ks) => {
+        const hm = objtree.get<HandlerMap>(handlerTree, ks);
         if (!hm) return;
         return reduceObject(hm as { [key: string]: Handler}, {}, (
             ht: ObjectTree<RemovableHandlerMap>,
@@ -66,7 +67,7 @@ export function bind(
 
 // Removes event listeners to elements
 export function unbind(handlerMap: ObjectTree<RemovableHandlerMap>) {
-    treeMap(handlerMap, handler => {
+    objtree.map(handlerMap, handler => {
         handler.remove();
     });
 }
