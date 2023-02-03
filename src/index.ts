@@ -29,6 +29,12 @@
 */
 
 export { Component } from './component';
+export { makeLoadComponents } from './loadComponents';
 export { query, $$, $ALL } from './dom';
 export { emit } from './events';
-export { makeLoadComponents } from './loadComponents';
+
+// export internals
+export * as tree from './objtree';
+export * as css from './css';
+export * as dom from './dom';
+export * as events from './events';
