@@ -625,4 +625,10 @@ or
 
 # Examples
 
-TODO
+To run examples, run
+
+```npm run examples```
+
+and then navigate to the url provided in the console.
+
+Some examles require to be built, refer to their respective `pakcage.json` or `README`.
