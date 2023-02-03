@@ -1,78 +1,19 @@
-import { query, querySelect, $$, $ALL, QueryResult, SelectorMaker, QuerySelector } from './dom';
+import { querySelect, QueryResult, QuerySelector } from './dom';
 import { CSSClass, cssClassNames } from './css';
 import { treeMap, ObjectTree } from './objtree';
 import { bind, unbind, emit, RemovableHandlerMap, HandlerMap } from './events';
 
 import autoBind from 'auto-bind';
+import { UUUFInput } from '.';
 
 export type HTMLElementComponent = HTMLElement & { component: typeof Component };
 
 export type DOMDefinition = QuerySelector | [QuerySelector, HandlerMap | undefined];
 
-const DEFAULT = {
-    componentSelector: '[data-js-component]',
-    getComponentName: (elem: HTMLElement): string => elem.dataset.jsComponent,
-    // eslint-disable-next-line no-unused-vars
-    importComponent: async (compName: string): Promise<typeof Component> => {
-        throw new Error(`importComponent is not implemented`);
-    },
-};
-
-export type UUUF = {
-    loadComponents: any,
-    Component: typeof Component,
-}
-
-export function uuuf({
-    componentSelector = DEFAULT.componentSelector,
-    getComponentName = DEFAULT.getComponentName,
-    importComponent = DEFAULT.importComponent,
-} = {}): UUUF {
-    function isComponent(e: HTMLElement): boolean {
-        return e.matches(componentSelector) && Boolean(getComponentName(e));
-    }
-
-    function isNotLoaded(e: HTMLElement & { component?: Component}): boolean {
-        return !e.component;
-    }
-
-    async function loadComponents(
-        root: HTMLElement | HTMLElement[] | HTMLCollection,
-        extraPredicate: ((elem: HTMLElement) => boolean) = () => true
-    ): Promise<void> {
-        let r;
-        if (root instanceof HTMLCollection) r = Array.from(root) as HTMLElement[];
-        if (root instanceof HTMLElement) r = [root] as HTMLElement[];
-        else r = root as HTMLElement[];
-
-        const predicate = (e: HTMLElement): boolean => {
-            return isComponent(e) && isNotLoaded(e) && extraPredicate(e);
-        };
-
-        const comps: Promise<Component>[] = query(r, predicate).map(async el => {
-            const compName = getComponentName(el);
-            const comp = await importComponent(compName);
-            return new (comp as typeof Component)(el);
-        });
-
-        return Promise.all(comps).then(async cs => {
-            for (const c of cs) {
-                Object.defineProperty(c.elem, 'component', {
-                    configurable: true,
-                    writable: false,
-                    enumerable: false,
-                    value: this,
-                })
-                await c.ready();
-            }
-        });
-    };
-
-    class Component {
-        static import = importComponent;
-
-        static load = loadComponents;
-
+export function makeComponent({
+    importComponent,
+}: UUUFInput): typeof Component {
+    return class Component {
         elem: HTMLElementComponent;
         args: { [key: string]: any };
         css: ObjectTree<CSSClass>;
@@ -167,10 +108,5 @@ export function uuuf({
         is(e: any): boolean {
             return e === this.elem;
         }
-    };
-
-    return {
-        loadComponents,
-        Component,
     };
 }

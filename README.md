@@ -204,7 +204,7 @@ This is why uuuf implements a custom query stategy, called `uuuf.query`, which g
 3. if an element matches, collect the element and stop
 4. otherwise, descend into its children and use them as the new root for the next recursion step
 
-A wise man one said a picture is worth a thousand words, so let's double that:
+A wise man once said a picture is worth a thousand words, so let's double that:
 
 ![query1](query1.svg)
 ![query2](query2.svg)
@@ -280,13 +280,6 @@ Helper function to emit custom events on DOM elements.
 
 > ```ts
 > class Component {
->     static import: async (componentName: string) => Promise<ComponentClass>
->
->     static load: (
->         root: HTMLElement | HTMLElement[] | HTMLCollection,
->         extraPredicate?: (elem: HTMLElement) => boolean
->     ) => Promise<void>;
->
 >     // Getters
 >     get CSS(): ObjectTree<string> {
 >         return {
@@ -341,21 +334,6 @@ Helper function to emit custom events on DOM elements.
 > ```
 
 Dat chunky boi is the base class to extend into your components.
-
-> ```ts
-> Component.import(componentName: string) => Promise<ComponentClass>
-> ```
-
-A convinient reference to `importComponent` function supplied to `uuuf()`.
-
-> ```ts
-> async Component.load(
->     root: HTMLElement | HTMLElement[] | HTMLCollection,
->     extraPredicate?: (elem: HTMLElement) => boolean
-> ) => Promise<void>
-> ```
-
-A convinient reference to `loadComponents` returned by `uuuf()`
 
 > ```ts
 > get CSS(): ObjectTree<string>
