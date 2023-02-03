@@ -371,7 +371,7 @@ The component constructor.
 
 `elem` is the DOM element matched by `loadComponents` during initialization.
 
-Initialization code should usually go into `async ready()`, since the order of component creation is not garanteed, `this.dom`/`this.css` aren't initialized yet and async code in the constructor is uncomfortable to handle.
+Initialization code should usually go into `async ready()`, since the order of component creation is not guaranteed, `this.dom`/`this.css` aren't initialized yet and async code in the constructor is uncomfortable to handle.
 
 > ```ts
 > async ready(): Promise<void>
@@ -433,9 +433,9 @@ The event is emitted on `this.elem`.
 
 Utility method that checks if the given argument is the DOM element controlled by the component.
 
-```ts
-async mix(component: typeof Component, elem = this.elem): Promise<Component>
-```
+> ```ts
+> async mix(component: typeof Component, elem = this.elem): Promise<Component>
+> ```
 
 Utility method that allows creation and initialization of other components inside a component, tipically done in `ready()`.
 
@@ -461,7 +461,7 @@ When `loadComponents` creates components, it stores a reference to the component
 > args: { [key: string]: any };
 > ```
 
-An object conataining initial data to use for custom component initialization. It's a `JSON.parse` of the attribute `data-args` on the component's element.
+An object containing initial data to use for custom component initialization. It's a `JSON.parse` of the attribute `data-args` on the component's element.
 
 > ```ts
 > css: ObjectTree<CSSClass>;
@@ -499,7 +499,7 @@ Returns the value of `tree` at a given `path`
 > ): ObjectTree<B>
 > ```
 
-Maps `f` to leaves of `tree`. returns a new object-tree;
+Maps `f` to leaves of `tree`. Returns a new object-tree;
 
 ### `uuuf.css`
 
@@ -509,7 +509,13 @@ This module contains function for creating `CSSClass` objects
 > uuuf.css.cssClass(className: string): CSSClass
 > ```
 
-Returns a function with signature `(elem: HTMLElement, toggle?: boolean) => boolean` that applies `className` on a given `elem`.
+Returns a function with signature
+
+> ```ts
+> cssClass(elem: HTMLElement, toggle?: boolean): boolean`
+> ```
+
+that applies `className` on a given `elem`.
 
 `toggle` defaults to `true`. if `false`, it removes `className` from `elem`.
 
@@ -563,7 +569,7 @@ This function is how `this.dom` is built.
 
 `elem` is the root for `querySelector`, `querySelectorAll` and `uuuf.query` search.
 
-`selectorMap` is an object-tree of `DOMDefinition`s. see `this.DOM`.
+`selectorMap` is an object-tree of `DOMDefinition`s. See `this.DOM`.
 
 ### `uuuf.events`
 
@@ -595,13 +601,13 @@ This is how `this.bind()` bind events on the dom.
 
 `elemTree` and `handlerTree` should have the same structure. Paths found in one tree but not in the other are ignored.
 
-return an object-tree with the same structure as `handlerTree`, but event handlers are replaced with functions that remove the associated handler.
+Returns an object-tree with the same structure as `handlerTree`, but event handlers are replaced with functions that remove the associated handler.
 
 > ```ts
 > uuuf.events.unbind(handlerMap: ObjectTree<RemovableHandlerMap>)
 > ```
 
-This function does the conceptual opposite of `uuuf.events.bind()`. It walks an object-tree of event handler remover and call them.
+This function does the conceptual opposite of `uuuf.events.bind()`. It walks an object-tree of event handler remover and calls them.
 
 `handlerMap` is tipically the output of `uuuf.events.bind()`
 
