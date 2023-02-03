@@ -35,8 +35,7 @@ Given this html (doesn't matter how it's generated as long as is available when 
 This is the component that handles the counter logic (`component/Counter.js`):
 
 ```js
-import { $$ } from 'uuuf'
-import { Component } from './uuuf'
+import { Component, $$, } from 'uuuf'
 
 class Counter extends Component {
     get CSS() {
@@ -112,28 +111,28 @@ myproject/
 │   └── uuuf/
 ├── components/
 │   └── HelloWorld.js
-├── uuuf.js
+├── loadComponents.js
 ├── index.js
 └── index.html
 ```
 
 This is how you initialize uuuf into your application:
 
-`uuuf.js`:
+`loadComponents.js`:
 ```js
-import uuuf from 'uuuf';
+import { makeLoadComponents } from 'uuuf';
 
 async function importComponent(componentName) {
     // this is an example with webpack dynamic imports
     return import(`@/components/${componentName}`).then(mod => mod.default);
 }
 
-export const { loadComponents, Component } = uuuf({ importComponent });
+export default makeLoadComponents(importComponent);
 ```
 
 `components/HelloWorls.js`:
 ```js
-import { Component } from '../uuuf'
+import { Component } from 'uuuf'
 
 class HelloWorld extends Component {
     async ready() {
@@ -144,7 +143,7 @@ class HelloWorld extends Component {
 
 `index.js`:
 ```js
-import { loadComponents } from './uuuf';
+import { loadComponents } from './loadComponents';
 
 loadComponents(document.body);
 ```
@@ -214,22 +213,22 @@ A wise man once said a picture is worth a thousand words, so let's double that:
 ### Framework functions
 
 > ```ts
-> uuuf({
->     importComponent: async (componentName: string) => Promise<ComponentClass>
->     componentSelector?: string,
->     getComponentName?: (elem: HTMLElement) => string,
-> }) => { loadComponents, Component }
+> uuuf.makeLoadComponents(
+>     importComponent: async (componentName: string) => Promise<ComponentClass>,
+>     {
+>         componentSelector?: string,
+>         getComponentName?: (elem: HTMLElement) => string,
+>     }
+> ) => LoadComponentsFn
 > ```
 
-This is the main function that is used to initialize the framework.
+This function creates a `loadComponents` function used to import components at runtime.
 
 `importComponent` is the only mandatory parameter, which handles how a component is imported given it's name.
 
 `componentSelector` defaults to `[data-js-component]` and must be a valid css selector.
 
 `getComponentName` is tasked with the extraction of the component name from the element. Defaults to `elem => elem.dataset.jsComponent`
-
-The return value are `loadComponents` and `Component`.
 
 > ```ts
 > async loadComponents(
@@ -321,9 +320,9 @@ Helper function to emit custom events on DOM elements.
 >
 >     emit(name: string, detail: any, bubbles = true)
 >
->     async mix(component: string | Component, elem = this.elem): Promise<Component>
->
 >     is(e: any): boolean
+>
+>     async mix(component: string | Component, elem = this.elem): Promise<Component>
 >
 >     // Public fields
 >     elem: HTMLElementComponent;
@@ -434,6 +433,22 @@ The event is emitted on `this.elem`.
 
 Utility method that checks if the given argument is the DOM element controlled by the component.
 
+```ts
+async mix(component: typeof Component, elem = this.elem): Promise<Component>
+```
+
+Utility method that allows creation and initialization of other components inside a component, tipically done in `ready()`.
+
+`component` is the class of the component to instantiate.
+
+`elem` is the `elem` passed to `component` constructor. Defaults to `this.elem`
+
+Returns a reference to the mixed-in component instance.
+
+The mixed-in component is not attached to the DOM.
+
+It's responbility of the mixin component to store the returned reference and to eventually re-expose mixed-in component's method.
+
 > ```ts
 > elem: HTMLElementComponent;
 > ```
@@ -455,10 +470,140 @@ An object conataining initial data to use for custom component initialization. I
 The object-tree storing `CSSClass`es
 
 > ```ts
-> dom: ObjectTree<QueryResult>;
+> dom: ObjectTree<QueryResuly>;
 > ```
 
 The object-tree storing DOM references
+
+## Internal fuinction
+
+uuuf exports internal utilities for advanced uses
+
+### `uuuf.tree`
+
+This module contains functions to manipulate object-trees
+
+> ```ts
+> uuuf.tree.get<A>(
+>     tree: ObjectTree<A>,
+>     path: string | string[],
+> ): ObjectTree<A> | A | undefined
+> ```
+
+Returns the value of `tree` at a given `path`
+
+> ```ts
+> uuuf.tree.map<A, B>(
+>     tree: ObjectTree<A>,
+>     f: ObjtreeMapFn<A, B>
+> ): ObjectTree<B>
+> ```
+
+Maps `f` to leaves of `tree`. returns a new object-tree;
+
+### `uuuf.css`
+
+This module contains function for creating `CSSClass` objects
+
+> ```ts
+> uuuf.css.cssClass(className: string): CSSClass
+> ```
+
+Returns a function with signature `(elem: HTMLElement, toggle?: boolean) => boolean` that applies `className` on a given `elem`.
+
+`toggle` defaults to `true`. if `false`, it removes `className` from `elem`.
+
+This function has also a couple of useful methods:
+
+> ```ts
+> cssClass.match(elem: HTMLElement) => boolean
+> ```
+
+Returns true if given `elem` has `className` applied
+
+> ```ts
+> cssClass.toString() => string
+> ```
+
+Returns `className`
+
+### `uuuf.dom`
+
+This modules containes functions to query the DOM
+
+> ```ts
+> uuuf.dom.query(
+>     root: HTMLElement | HTMLElement[],
+>     predicate: string | ((e: HTMLElement) => boolean)
+> ): HTMLElement[]
+> ```
+
+Same as `uuuf.query`
+
+> ```ts
+> uuuf.dom.$$
+> ```
+
+Same as `uuuf.$$`
+
+> ```ts
+> uuuf.dom.$ALL
+> ```
+
+Same as `uuuf.$ALL`
+
+> ```ts
+> uuuf.dom.querySelect(
+>     elem: HTMLElement,
+>     selectorMap: ObjectTree<QuerySelector>
+> ): ObjectTree<QueryResult>
+> ```
+
+This function is how `this.dom` is built.
+
+`elem` is the root for `querySelector`, `querySelectorAll` and `uuuf.query` search.
+
+`selectorMap` is an object-tree of `DOMDefinition`s. see `this.DOM`.
+
+### `uuuf.events`
+
+This module contains function for event manipulation
+
+> ```ts
+> uuuf.events.emit(
+>     elem: HTMLElement,
+>     name: string,
+>     detail: any,
+>     bubbles = true
+> )
+> ```
+
+Same as `uuuf.emit`
+
+> ```ts
+> uuuf.events.bind(
+>     elemTree: ObjectTree<QueryResult>,
+>     handlerTree: ObjectTree<HandlerMap>
+> ): ObjectTree<RemovableHandlerMap>
+> ```
+
+This is how `this.bind()` bind events on the dom.
+
+`elemTree` is an object-tree of dom elements. Tipically `uuuf.dom.querySelect` output.
+
+`handlerTree` is an object-tree of event definitons.
+
+`elemTree` and `handlerTree` should have the same structure. Paths found in one tree but not in the other are ignored.
+
+return an object-tree with the same structure as `handlerTree`, but event handlers are replaced with functions that remove the associated handler.
+
+> ```ts
+> uuuf.events.unbind(handlerMap: ObjectTree<RemovableHandlerMap>)
+> ```
+
+This function does the conceptual opposite of `uuuf.events.bind()`. It walks an object-tree of event handler remover and call them.
+
+`handlerMap` is tipically the output of `uuuf.events.bind()`
 
 # Contribute
 
