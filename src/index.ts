@@ -29,4 +29,6 @@
 */
 
 export * from './component';
+export { query, $$, $ALL } from './dom';
+export { emit } from './events';
 export { uuuf as default } from './component';

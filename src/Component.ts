@@ -19,8 +19,6 @@ const DEFAULT = {
 };
 
 export type UUUF = {
-    $$: SelectorMaker,
-    $ALL: SelectorMaker,
     loadComponents: any,
     Component: typeof Component,
 }
@@ -41,7 +39,7 @@ export function uuuf({
     async function loadComponents(
         root: HTMLElement | HTMLElement[] | HTMLCollection,
         extraPredicate: ((elem: HTMLElement) => boolean) = () => true
-    ) {
+    ): Promise<void> {
         let r;
         if (root instanceof HTMLCollection) r = Array.from(root) as HTMLElement[];
         if (root instanceof HTMLElement) r = [root] as HTMLElement[];
@@ -172,8 +170,6 @@ export function uuuf({
     };
 
     return {
-        $$,
-        $ALL,
         loadComponents,
         Component,
     };
