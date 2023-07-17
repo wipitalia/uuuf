@@ -43,7 +43,7 @@ export function makeLoadComponents(
     ): Promise<void> {
         let r: HTMLElement[];
         if (root instanceof HTMLCollection) r = Array.from(root) as HTMLElement[];
-        if (root instanceof HTMLElement) r = [root] as HTMLElement[];
+        else if (root instanceof HTMLElement) r = [root] as HTMLElement[];
         else r = root as HTMLElement[];
 
         const predicate = (e: HTMLElement): boolean => {
