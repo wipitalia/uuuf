@@ -28,7 +28,7 @@
                                    ~----~
 */
 
-export { Component } from './component';
+export { Component } from './Component';
 export { makeLoadComponents } from './loadComponents';
 export { query, $$, $ALL } from './dom';
 export { emit } from './events';

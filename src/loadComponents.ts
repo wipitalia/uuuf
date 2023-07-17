@@ -1,4 +1,4 @@
-import { Component } from './component';
+import { Component } from './Component';
 import { query } from './dom';
 
 export type LoadComponentsFn = (
