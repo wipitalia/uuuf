@@ -35,7 +35,7 @@ Given this html (doesn't matter how it's generated as long as is available when 
 This is the component that handles the counter logic (`component/Counter.js`):
 
 ```js
-import { Component, $$, } from 'uuuf'
+import { Component, $$ } from 'uuuf'
 
 class Counter extends Component {
     get CSS() {
@@ -143,7 +143,7 @@ class HelloWorld extends Component {
 
 `index.js`:
 ```js
-import { loadComponents } from './loadComponents';
+import loadComponents from './loadComponents';
 
 loadComponents(document.body);
 ```
