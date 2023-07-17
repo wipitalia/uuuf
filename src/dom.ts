@@ -61,7 +61,7 @@ export function querySelect(
 ): ObjectTree<QueryResult> {
     return objtree.map(selectorMap, selector => {
         if (typeof selector === 'string') return elem.querySelector(selector);
-        if (selector.type === 'query') return query(elem, selector.toString());
-        if (selector.type === 'all') return Array.from(elem.querySelectorAll(selector.toString()));
+        if (selector.type === SelectorType.Query) return query(elem, selector.toString());
+        if (selector.type === SelectorType.All) return Array.from(elem.querySelectorAll(selector.toString()));
     });
 }
