@@ -80,7 +80,6 @@ export class Component {
         const handlersMapping = objtree.map(this.DOM, v => {
             return Array.isArray(v) ? v[1] : undefined;
         });
-        console.log(handlersMapping)
         this._handlers = bind(this.dom, handlersMapping);
     }
 
