@@ -33,6 +33,10 @@ function makeRemovableHandler(
     eventName: string,
     handler: Handler,
 ): RemovableHandler {
+    if (!elem) {
+        return withRemove(handler);
+    }
+
     if (Array.isArray(elem)) {
         elem.forEach(e => e.addEventListener(eventName, handler));
         return withRemove(handler, () => {
