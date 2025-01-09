@@ -30,7 +30,7 @@
 
 export { Component } from './Component';
 export { makeLoadComponents } from './loadComponents';
-export { query, $$, $ALL } from './dom';
+export { query, $$, $ALL, $DOC, $$DOC, $UP } from './dom';
 export { emit } from './events';
 
 // export internals

@@ -24,6 +24,10 @@ export function query(
 enum SelectorType {
     All = 'all',
     Query = 'query',
+    Document = 'document',
+    DocumentAll = 'document-all',
+    Closest = 'closest',
+    Window = 'window',
 }
 
 export type QuerySelector = string | { type: SelectorType, toString(): string };
@@ -52,7 +56,19 @@ export function $ALL(strings: string[], ...values: any[]): QuerySelector {
     return selector(SelectorType.All, strings, ...values);
 }
 
-export type QueryResult = Element | HTMLElement | HTMLElement[];
+export function $DOC(strings: string[], ...values: any[]): QuerySelector {
+    return selector(SelectorType.Document, strings, ...values);
+}
+
+export function $$DOC(strings: string[], ...values: any[]): QuerySelector {
+    return selector(SelectorType.DocumentAll, strings, ...values);
+}
+
+export function $UP(strings: string[], ...values: any[]): QuerySelector {
+    return selector(SelectorType.Closest, strings, ...values);
+}
+
+export type QueryResult = Element | HTMLElement | HTMLElement[] | Document | Window;
 
 // Query DOM from `elem`, returning map of results
 export function querySelect(
@@ -63,5 +79,8 @@ export function querySelect(
         if (typeof selector === 'string') return elem.querySelector(selector);
         if (selector.type === SelectorType.Query) return query(elem, selector.toString());
         if (selector.type === SelectorType.All) return Array.from(elem.querySelectorAll(selector.toString()));
+        if (selector.type === SelectorType.Document) return document.querySelector(selector.toString());
+        if (selector.type === SelectorType.DocumentAll) return Array.from(document.querySelectorAll(selector.toString()));
+        if (selector.type === SelectorType.Closest) return elem.closest(selector.toString());
     });
 }

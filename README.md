@@ -265,6 +265,24 @@ String template tag used in `this.DOM` to express usage of `uuuf.query` as strat
 String template tag used in `this.DOM` to express usage of `elem.querySelectorAll` as strategy.
 
 > ```ts
+> uuuf.$DOC
+> ```
+
+String template tag used in `this.DOM` to express usage of `document.querySelector` as strategy.
+
+> ```ts
+> uuuf.$$DOC
+> ```
+
+String template tag used in `this.DOM` to express usage of `document.querySelectorAll` as strategy.
+
+> ```ts
+> uuuf.$UP
+> ```
+
+String template tag used in `this.DOM` to express usage of `elem.closest` as strategy.
+
+> ```ts
 > uuuf.emit(
 >     elem: HTMLElement,
 >     name: string,
